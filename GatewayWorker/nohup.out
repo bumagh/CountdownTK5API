@@ -1,0 +1,39 @@
+Workerman[./Applications/Fish/start_register.php] start in DEBUG mode
+------------------------------------------ WORKERMAN ------------------------------------------
+Workerman version:4.0.27          PHP version:7.4.33
+------------------------------------------- WORKERS -------------------------------------------
+proto   user            worker          listen                   processes    status           
+tcp     root            Register        text://127.0.0.1:6991    1             [OK]            
+-----------------------------------------------------------------------------------------------
+Press Ctrl+C to stop. Start success.
+Workerman[start_register.php] stopping ...
+Workerman[start_register.php] has been stopped
+Workerman[./Applications/Fish/start_gateway.php] start in DEBUG mode
+---------------------------------------- WORKERMAN -----------------------------------------
+Workerman version:4.0.27          PHP version:7.4.33
+----------------------------------------- WORKERS ------------------------------------------
+proto   user            worker          listen                processes    status           
+tcp     root            FishApp         tcp://0.0.0.0:6991    4             [OK]            
+--------------------------------------------------------------------------------------------
+Press Ctrl+C to stop. Start success.
+string(9) "connected"
+string(9) "connected"
+string(9) "connected"
+string(9) "connected"
+string(9) "connected"
+string(9) "string(9) "connectedstring(9) "connected"
+connected"
+"
+string(9) "connected"
+Workerman[start_gateway.php] stopping ...
+Workerman[start_gateway.php] has been stopped
+Workerman[./Applications/Fish/start_businessworker.php] start in DEBUG mode
+------------------------------------------ WORKERMAN ------------------------------------------
+Workerman version:4.0.27          PHP version:7.4.33
+------------------------------------------- WORKERS -------------------------------------------
+proto   user            worker                   listen          processes    status           
+tcp     root            YourAppBusinessWorker    none            4             [OK]            
+-----------------------------------------------------------------------------------------------
+Press Ctrl+C to stop. Start success.
+Workerman[start_businessworker.php] stopping ...
+Workerman[start_businessworker.php] has been stopped
