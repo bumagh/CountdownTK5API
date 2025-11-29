@@ -13,7 +13,7 @@ class UserModel extends Model
     protected $pk = 'id';
 
     // 自动时间戳
-    protected $autoWriteTimestamp = true;
+    protected $autoWriteTimestamp = "datetime";
     protected $createTime = 'created_at';
     protected $updateTime = 'updated_at';
 
