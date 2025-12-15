@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 use app\common\model\UserModel;
 use think\Controller;
 use think\Request;
+use Firebase\JWT\JWT;
 
 class User extends Controller
 {
@@ -41,7 +42,7 @@ class User extends Controller
         if (!$info) {
             return json(['code' => 1, 'msg' => '不存在']);
         }
-        if ($info['password'] != md5($data['password'])) {
+        if ($info['password'] != ($data['password'])) {
             return json(['code' => 2, 'msg' => '账号或密码错误']);
         }
         $key = 'api';
