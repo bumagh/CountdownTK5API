@@ -6,6 +6,7 @@ use app\common\model\AdminModel;
 use Firebase\JWT\JWT;
 use think\Controller;
 use think\Request;
+use app\common\model\ZoneModel;
 
 class Login extends Cross
 {
@@ -16,6 +17,7 @@ class Login extends Cross
      */
     public function index(Request $request)
     {
+
         $data = $request->param();
         $db = new AdminModel();
 

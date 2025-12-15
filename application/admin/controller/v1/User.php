@@ -32,30 +32,4 @@ class User extends Controller
             return json(['code' => 404, 'msg' => '用户不存在']);
         }
     }
-    public function login(Request $request)
-    {
-        $data = $request->param();
-        $user= new UserModel();
-
-        $info = $user->where('username', $data['username'])->find();
-        if (!$info) {
-            return json(['code' => 1, 'msg' => '不存在']);
-        }
-        if ($info['password'] != md5($data['password'])) {
-            return json(['code' => 2, 'msg' => '账号或密码错误']);
-        }
-        $key = 'api';
-        $payload = [
-            'iss' => 'http://rbac',
-            'aud' => 'http://rbac',
-            'iat' => time(),
-            'exp' => time() + 60 * 60 * 24 * 365,
-            'aid' => $info['id'],
-        ];
-      
-        $token = JWT::encode($payload, $key, 'HS256');
-        return json(['code' => 0, 'msg' => '登录成功', 'data' => [
-            'token' => $token
-        ]]);
-    }   
 }
