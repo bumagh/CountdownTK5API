@@ -5,10 +5,11 @@ namespace app\api\controller\v1;
 
 use app\common\model\UserModel;
 use think\Controller;
+use app\api\controller\Cross;
 use think\Request;
 use Firebase\JWT\JWT;
 
-class User extends Controller
+class User extends Cross
 {
     // 获取当前用户信息（假设当前用户ID为1，实际应根据登录状态获取）
     public function index()
