@@ -12,7 +12,8 @@ class Category extends Controller
     // 获取用户的所有分类
     public function index()
     {
-        $categories = CategoryModel::where('user_id', 1)->select();
+        $userid = input('userid');
+        $categories = CategoryModel::where('user_id', $userid)->select();
         return json(['code' => 200, 'msg' => '成功', 'data' => $categories]);
     }
 

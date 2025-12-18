@@ -69,7 +69,6 @@ class Countdown extends Controller
     public function save(Request $request)
     {
         $data = $request->param();
-        $data['user_id'] = 1; // 当前用户ID
         $validate = new \app\common\validate\Countdown();
         if (!$validate->check($data)) {
             return json(['code' => 400, 'msg' => $validate->getError()]);
@@ -80,12 +79,12 @@ class Countdown extends Controller
     }
 
     // 更新倒数日
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         $data = $request->param();
-        $countdown = CountdownModel::get($id);
+        $countdown = CountdownModel::get($data['id']);
         if ($countdown) {
-            $countdown->save($data);
+            $countdown->save($data['data']);
             $countdown->append(['days_diff', 'display_date', 'repeat_frequency_text']);
             return json(['code' => 200, 'msg' => '更新成功', 'data' => $countdown]);
         } else {
