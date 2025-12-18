@@ -12,10 +12,9 @@ class Countdown extends Controller
     // 获取用户的倒数日列表
     public function index(Request $request)
     {
-        $user_id = 1; // 当前用户ID
+        $user_id = input('userid'); // 当前用户ID
         $category_id = $request->param('category_id', 0);
         $include_archived = $request->param('include_archived', 0);
-
         $query = CountdownModel::where('user_id', $user_id);
 
         if ($category_id) {
