@@ -81,7 +81,7 @@ class User extends Cross
                 ['name' => '工作', 'icon' => 'work', 'color' => '#52c41a', 'user_id' => $user->id],
                 ['name' => '家人', 'icon' => 'family', 'color' => '#faad14', 'user_id' => $user->id],
                 ['name' => '生活', 'icon' => 'life', 'color' => '#1890ff', 'user_id' => $user->id],
-                ['name' => '其他', 'icon' => 'other', 'color' => '#f5222d', 'user_id' => $user->id],
+                ['name' => '长寿', 'icon' => 'longlife', 'color' => '#f5222d', 'user_id' => $user->id],
             ];
             foreach ($defaultCats as $catName) {
                 $cats = new CategoryModel();
@@ -89,6 +89,20 @@ class User extends Cross
             }
             if (!$saveRet) {
                 return json(['code' => 4, 'msg' => '默认分类创建失败',]);
+            }
+            //自动生成一条120岁倒数日并且置顶
+            $countdownData = [
+                'user_id' => $user->id,
+                'title' => '120岁倒数日',
+                'date' => date('Y-m-d', strtotime($data['birth_date'] . ' +120 years')),
+                'is_pinned' => true,
+                //从category表中获取刚创建的“长寿”分类ID
+                'category_id' => $cats->id,
+            ];
+            $countdown = new \app\common\model\CountdownModel();
+            $countdownRet = $countdown->save($countdownData);
+            if(!$countdownRet){
+                return json(['code' => 5, 'msg' => '默认倒数日创建失败',]);
             }
             return json(['code' => 200, 'msg' => '注册成功',]);
         } else {
