@@ -1,4 +1,4 @@
-// config/wechat.php
+<!-- // config/wechat.php
 return [
     // 公众号配置
     'official_account' => [
@@ -17,4 +17,4 @@ return [
     ],
     
     // 其他配置...
-];
+]; -->
