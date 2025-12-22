@@ -1,0 +1,66 @@
+<?php
+// app/common/model/User.php
+
+namespace app\common\model;
+
+use think\Model;
+
+class User extends Model
+{
+    // 设置表名
+    protected $table = 'user';
+    
+    // 设置主键
+    protected $pk = 'id';
+    
+    // 自动写入时间戳
+    protected $autoWriteTimestamp = true;
+    protected $createTime = 'register_time';
+    protected $updateTime = 'update_time';
+    
+    // 定义时间戳字段名
+    protected $createTimeName = 'register_time';
+    protected $updateTimeName = 'update_time';
+    
+    // 设置字段类型
+    protected $type = [
+        'id' => 'integer',
+        'sex' => 'integer',
+        'status' => 'integer',
+        'register_time' => 'timestamp',
+        'last_login_time' => 'timestamp',
+        'update_time' => 'timestamp'
+    ];
+    
+    // 字段自动完成
+    protected $insert = [
+        'status' => 1
+    ];
+    
+    // 获取器：处理头像URL
+    public function getAvatarAttr($value)
+    {
+        if (empty($value)) {
+            return config('app.default_avatar', '');
+        }
+        
+        // 如果是相对路径，添加完整URL
+        if (strpos($value, 'http') !== 0) {
+            return request()->domain() . '/uploads/' . $value;
+        }
+        
+        return $value;
+    }
+    
+    // 修改器：保存头像前处理
+    public function setAvatarAttr($value)
+    {
+        // 如果是网络图片，可以下载到本地
+        if (strpos($value, 'http') === 0) {
+            // 这里可以添加下载网络图片到本地的逻辑
+            return $value;
+        }
+        
+        return $value;
+    }
+}
