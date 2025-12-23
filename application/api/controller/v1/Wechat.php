@@ -93,7 +93,7 @@ class Wechat
                         'province' => $user['province'],
                         'city' => $user['city'],
                         'country' => $user['country'],
-                        'isfirst' => empty($user['birth_date']) ? 'yes' : 'no'
+                        'isfirst' => $user['birth_date'] == null ? 'yes' : 'no'
                     ]
                 ]
             ]);
