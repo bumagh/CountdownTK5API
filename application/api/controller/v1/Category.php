@@ -32,7 +32,6 @@ class Category extends Controller
     public function save(Request $request)
     {
         $data = $request->param();
-        $data['user_id'] = 1; // 当前用户ID
         $validate = new \app\common\validate\Category();
         if (!$validate->check($data)) {
             return json(['code' => 400, 'msg' => $validate->getError()]);
