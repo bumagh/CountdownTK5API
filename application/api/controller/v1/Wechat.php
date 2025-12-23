@@ -16,6 +16,7 @@ class Wechat
 {
     protected $appId = "wxc164b903f978d83d";
     protected $appSecret = "b296cbe4bb23e7714b38ab6f23ac7b8e";
+    protected $tempid = "5XMZqesOgEVeZPyLdyn5nlr_LnjBBtnWIaGEKjZhSJI";
     /**
      * 微信公众号网页授权登录
      * @param Request $request
