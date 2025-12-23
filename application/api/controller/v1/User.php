@@ -3,12 +3,13 @@
 namespace app\api\controller\v1;
 
 
-use app\common\model\UserModel;
-use think\Controller;
-use app\api\controller\Cross;
-use app\common\model\CategoryModel;
+use think\Db;
 use think\Request;
 use Firebase\JWT\JWT;
+use think\Controller;
+use app\api\controller\Cross;
+use app\common\model\UserModel;
+use app\common\model\CategoryModel;
 
 class User extends Cross
 {
@@ -66,6 +67,7 @@ class User extends Cross
     public function register(Request $request)
     {
         $data = $request->param();
+
         $user = new UserModel();
         if (empty($data['username']) || empty($data['password'])) {
             return json(['code' => 3, 'msg' => '用户名或密码不能为空']);
@@ -78,11 +80,14 @@ class User extends Cross
         if ($ret) {
             //自动生成四条默认分类
             $defaultCats = [
-                ['name' => '工作', 'icon' => 'work', 'color' => '#52c41a', 'user_id' => $user->id],
-                ['name' => '家人', 'icon' => 'family', 'color' => '#faad14', 'user_id' => $user->id],
-                ['name' => '生活', 'icon' => 'life', 'color' => '#1890ff', 'user_id' => $user->id],
-                ['name' => '长寿', 'icon' => 'longlife', 'color' => '#f5222d', 'user_id' => $user->id],
+                ['name' => 'work', 'icon' => '💼', 'color' => '#52c41a', 'user_id' => $user->id],
+                ['name' => 'family', 'icon' => '👨‍👩‍👧', 'color' => '#faad14', 'user_id' => $user->id],
+                ['name' => 'life', 'icon' => '🏠', 'color' => '#1890ff', 'user_id' => $user->id],
+                ['name' => 'longlife', 'icon' => '❤️', 'color' => '#f5222d', 'user_id' => $user->id],
             ];
+            Db::execute("SET NAMES utf8mb4");
+            Db::execute("SET CHARACTER SET utf8mb4");
+            Db::execute("SET character_set_connection = utf8mb4");
             foreach ($defaultCats as $catName) {
                 $cats = new CategoryModel();
                 $saveRet = $cats->save($catName);
@@ -101,7 +106,7 @@ class User extends Cross
             ];
             $countdown = new \app\common\model\CountdownModel();
             $countdownRet = $countdown->save($countdownData);
-            if(!$countdownRet){
+            if (!$countdownRet) {
                 return json(['code' => 5, 'msg' => '默认倒数日创建失败',]);
             }
             return json(['code' => 200, 'msg' => '注册成功',]);
