@@ -85,9 +85,6 @@ class User extends Cross
                 ['name' => 'life', 'icon' => '🏠', 'color' => '#1890ff', 'user_id' => $user->id],
                 ['name' => 'longlife', 'icon' => '❤️', 'color' => '#f5222d', 'user_id' => $user->id],
             ];
-            Db::execute("SET NAMES utf8mb4");
-            Db::execute("SET CHARACTER SET utf8mb4");
-            Db::execute("SET character_set_connection = utf8mb4");
             foreach ($defaultCats as $catName) {
                 $cats = new CategoryModel();
                 $saveRet = $cats->save($catName);
