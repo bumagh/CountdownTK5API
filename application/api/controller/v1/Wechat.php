@@ -92,7 +92,8 @@ class Wechat
                         'sex' => $user['sex'],
                         'province' => $user['province'],
                         'city' => $user['city'],
-                        'country' => $user['country']
+                        'country' => $user['country'],
+                        'isfirst' => empty($user['birth_date']) ? 'yes' : 'no'
                     ]
                 ]
             ]);
