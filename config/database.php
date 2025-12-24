@@ -17,7 +17,7 @@ return [
     // 数据库名
     'database'        => 'countdownapp',
     // 用户名
-    'username'        => 'countdownapp',
+    'username'        => 'root',
     // 密码
     'password'        => '123321',
     // 端口
