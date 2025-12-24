@@ -77,7 +77,7 @@ class Wechat
 
             // 6. 记录登录日志
             $this->recordLoginLog($user['id']);
-
+            $hasBirthDate = isset($user['birth_date']) && !empty(trim($user['birth_date'] ?? ''));
             // 7. 返回用户信息和token
             return json([
                 'code' => 200,
@@ -93,7 +93,7 @@ class Wechat
                         'province' => $user['province'],
                         'city' => $user['city'],
                         'country' => $user['country'],
-                        'isfirst' => $user['birth_date'] == null ? 'yes' : 'no'
+                        'isfirst' => $hasBirthDate ? 'no' : 'yes'
                     ]
                 ]
             ]);
