@@ -94,10 +94,10 @@ class User extends Cross
             if (!$saveRet) {
                 return json(['code' => 4, 'msg' => '默认分类创建失败',]);
             }
-            //自动生成一条120岁倒数日并且置顶
+            //自动生成一条120岁奇妙日并且置顶
             $countdownData = [
                 'user_id' => $info->id,
-                'title' => '120岁倒数日',
+                'title' => '120岁奇妙日',
                 'date' => date('Y-m-d', strtotime($info['birth_date'] . ' +120 years')),
                 'is_pinned' => true,
                 //从category表中获取刚创建的“长寿”分类ID
@@ -106,7 +106,7 @@ class User extends Cross
             $countdown = new \app\common\model\CountdownModel();
             $countdownRet = $countdown->save($countdownData);
             if (!$countdownRet) {
-                return json(['code' => 5, 'msg' => '默认倒数日创建失败']);
+                return json(['code' => 5, 'msg' => '默认奇妙日创建失败']);
             }
             return json(['code' => 200, 'msg' => '注册成功',]);
         } else {
@@ -143,10 +143,10 @@ class User extends Cross
         if (!$saveRet) {
             return json(['code' => 4, 'msg' => '默认分类创建失败',]);
         }
-        //自动生成一条120岁倒数日并且置顶
+        //自动生成一条120岁奇妙日并且置顶
         $countdownData = [
             'user_id' => $info->id,
-            'title' => '120岁倒数日',
+            'title' => '120岁奇妙日',
             'date' => date('Y-m-d', strtotime($info['birth_date'] . ' +120 years')),
             'is_pinned' => true,
             //从category表中获取刚创建的“长寿”分类ID
@@ -155,7 +155,7 @@ class User extends Cross
         $countdown = new \app\common\model\CountdownModel();
         $countdownRet = $countdown->save($countdownData);
         if (!$countdownRet) {
-            return json(['code' => 5, 'msg' => '默认倒数日创建失败']);
+            return json(['code' => 5, 'msg' => '默认奇妙日创建失败']);
         }
         return json(['code' => 200, 'msg' => '成功初始化']);
     }

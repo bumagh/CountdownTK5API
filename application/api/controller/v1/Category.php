@@ -41,10 +41,10 @@ class Category extends Controller
     }
 
     // 更新分类
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         $data = $request->param();
-        $category = CategoryModel::get($id);
+        $category = CategoryModel::get($data['id']);
         if ($category) {
             $category->save($data);
             return json(['code' => 200, 'msg' => '更新成功', 'data' => $category]);
@@ -54,8 +54,12 @@ class Category extends Controller
     }
 
     // 删除分类
-    public function delete($id)
+    public function delete()
     {
+        $id = input('id');
+        if (empty($id)) {
+            return json(['code' => 400, 'msg' => '分类ID不能为空']);
+        }
         $category = CategoryModel::get($id);
         if ($category) {
             $category->delete();
