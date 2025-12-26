@@ -26,7 +26,7 @@ class Wechat
     {
         try {
             // 1. 获取参数
-            $code = $request->param('code', '');
+            $code = input('code', '');
             if (empty($code)) {
                 return json([
                     'code' => 400,
@@ -107,16 +107,100 @@ class Wechat
     }
 
     /**
+     * 发送服务号模板消息
+     * POST /api/v1/wechat/sendTemplateMessage
+     *
+     * 参数：
+     * - openid: 接收用户openid（必填）
+     * - template_id: 模板ID（可选，默认使用$this->tempid）
+     * - data: 模板数据（必填，形如：{"first":{"value":"xxx"},"keyword1":{"value":"xxx"},...}）
+     * - url: 跳转链接（可选）
+     * - miniprogram: 小程序跳转（可选，形如：{"appid":"...","pagepath":"..."}）
+     */
+    public function sendTemplateMessage(Request $request)
+    {
+        try {
+            $openid = input('openid', '');
+            $templateId = input('template_id', '') ?: $this->tempid;
+            $data = input('data', []);
+            $url = input('url', '') ?: Config::get('wechat.official_account.url', '');
+            $miniprogram = input('miniprogram', Config::get('wechat.official_account.miniprogram', []));
+
+            if (empty($openid)) {
+                return json(['code' => 400, 'message' => '缺少openid参数', 'data' => null]);
+            }
+            if (empty($templateId)) {
+                return json(['code' => 400, 'message' => '缺少template_id（模板ID）配置/参数', 'data' => null]);
+            }
+            if (!is_array($data) || empty($data)) {
+                return json(['code' => 400, 'message' => '缺少data参数（模板数据）', 'data' => null]);
+            }
+            if (empty($this->appId) || empty($this->appSecret)) {
+                return json(['code' => 500, 'message' => '公众号appid/secret未配置', 'data' => null]);
+            }
+
+            $accessToken = $this->getGlobalAccessToken($this->appId, $this->appSecret);
+            if (!$accessToken) {
+                return json(['code' => 500, 'message' => '获取access_token失败', 'data' => null]);
+            }
+
+            $api = 'https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=' . $accessToken;
+            $payload = [
+                'touser' => $openid,
+                'template_id' => $templateId,
+                'data' => $data,
+            ];
+            if (!empty($url)) {
+                $payload['url'] = $url;
+            }
+            if (is_array($miniprogram) && !empty($miniprogram['appid']) && !empty($miniprogram['pagepath'])) {
+                $payload['miniprogram'] = [
+                    'appid' => $miniprogram['appid'],
+                    'pagepath' => $miniprogram['pagepath'],
+                ];
+            }
+
+            $resp = $this->httpPostJson($api, $payload);
+            if ($resp === false) {
+                return json(['code' => 500, 'message' => '模板消息请求失败', 'data' => null]);
+            }
+
+            $respData = json_decode($resp, true);
+            if (!is_array($respData)) {
+                return json(['code' => 500, 'message' => '模板消息响应解析失败', 'data' => ['raw' => $resp]]);
+            }
+
+            // errcode=0 成功
+            if (($respData['errcode'] ?? -1) !== 0) {
+                Log::error('发送模板消息失败: ' . json_encode($respData, JSON_UNESCAPED_UNICODE));
+                return json([
+                    'code' => 500,
+                    'message' => '发送失败: ' . ($respData['errmsg'] ?? 'unknown'),
+                    'data' => $respData
+                ]);
+            }
+
+            return json([
+                'code' => 200,
+                'message' => '发送成功',
+                'data' => $respData
+            ]);
+        } catch (\Exception $e) {
+            return json([
+                'code' => 500,
+                'message' => '服务器错误: ' . $e->getMessage(),
+                'data' => null
+            ]);
+        }
+    }
+
+    /**
      * 使用code获取access_token和openid
      * @param string $code
      * @return array|false
      */
     private function getWechatAccessToken($code)
     {
-        // $appId = Config::get('wechat.official_account.default.app_id');
-        // $appSecret = Config::get('wechat.official_account.default.secret');
-
-
         $url = "https://api.weixin.qq.com/sns/oauth2/access_token";
         $params = [
             'appid' => $this->appId,
@@ -275,6 +359,41 @@ class Wechat
     }
 
     /**
+     * HTTP POST JSON请求
+     * @param string $url
+     * @param array $payload
+     * @return string|false
+     */
+    private function httpPostJson($url, array $payload)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_POST, 1);
+
+        $json = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json; charset=utf-8',
+            'Content-Length: ' . strlen($json)
+        ]);
+
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            Log::error('HTTP POST请求失败: ' . $error);
+            return false;
+        }
+
+        return $response;
+    }
+
+    /**
      * 获取JSSDK配置（前端可能需要）
      * @param Request $request
      * @return Response
@@ -282,7 +401,7 @@ class Wechat
     public function getJsConfig(Request $request)
     {
         try {
-            $url = $request->param('url', '');
+            $url = input('url', '');
             if (empty($url)) {
                 return json([
                     'code' => 400,
@@ -357,24 +476,30 @@ class Wechat
         }
 
         // 从微信服务器获取
-        $url = "https://api.weixin.qq.com/cgi-bin/token";
+        $url = "https://api.weixin.qq.com/cgi-bin/stable_token";
         $params = [
             'grant_type' => 'client_credential',
             'appid' => $appId,
-            'secret' => $this->appSecret
+            'secret' => $appSecret
         ];
 
         $fullUrl = $url . '?' . http_build_query($params);
-        $result = $this->httpGet($fullUrl);
-
+        $result = $this->httpPostJson($url, $params);
+        var_dump($result);
+        exit;
         if ($result) {
             $data = json_decode($result, true);
             if (isset($data['access_token'])) {
                 // 缓存access_token，提前200秒过期
-                $expireTime = $data['expires_in'] - 200;
+                $expireTime = ($data['expires_in'] ?? 7200) - 200;
+                if ($expireTime < 60) {
+                    $expireTime = 60;
+                }
                 Cache::set($cacheKey, $data['access_token'], $expireTime);
                 return $data['access_token'];
             }
+
+            Log::error('微信全局access_token获取失败: ' . json_encode($data, JSON_UNESCAPED_UNICODE));
         }
 
         return false;
@@ -441,7 +566,7 @@ class Wechat
     public function getUserInfo(Request $request)
     {
         try {
-            $openid = $request->param('openid', '');
+            $openid = input('openid', '');
             $token = $request->header('Authorization', '');
 
             if (empty($openid)) {

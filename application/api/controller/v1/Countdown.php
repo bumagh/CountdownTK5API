@@ -40,7 +40,7 @@ class Countdown extends Controller
     // 获取归档的倒数日
     public function archived()
     {
-        $user_id = 1;
+        $user_id = input('userid'); // 当前用户ID
         $list = CountdownModel::where('user_id', $user_id)
             ->where('is_archived', true)
             ->order('updated_at DESC')
@@ -54,8 +54,9 @@ class Countdown extends Controller
     }
 
     // 获取单个倒数日
-    public function read($id)
+    public function read()
     {
+        $id = input('id');
         $countdown = CountdownModel::get($id);
         if ($countdown) {
             $countdown->append(['days_diff', 'display_date', 'repeat_frequency_text']);
@@ -93,8 +94,9 @@ class Countdown extends Controller
     }
 
     // 删除倒数日
-    public function delete($id)
+    public function delete()
     {
+        $id = input('id');
         $countdown = CountdownModel::get($id);
         if ($countdown) {
             $countdown->delete();
@@ -105,8 +107,9 @@ class Countdown extends Controller
     }
 
     // 归档倒数日
-    public function archive($id)
+    public function archive()
     {
+        $id = input('id');
         $countdown = CountdownModel::get($id);
         if ($countdown) {
             $countdown->is_archived = true;
@@ -118,8 +121,10 @@ class Countdown extends Controller
     }
 
     // 取消归档倒数日
-    public function unarchive($id)
+    public function unarchive()
     {
+        $id = input('id');
+
         $countdown = CountdownModel::get($id);
         if ($countdown) {
             $countdown->is_archived = false;
@@ -131,8 +136,9 @@ class Countdown extends Controller
     }
 
     // 切换置顶状态
-    public function togglePin($id)
+    public function togglePin()
     {
+        $id = input('id');
         $countdown = CountdownModel::get($id);
         if ($countdown) {
             $countdown->is_pinned = !$countdown->is_pinned;
