@@ -12,7 +12,7 @@ use think\facade\Config;
 use app\common\model\UserModel;
 use app\common\service\JwtService;
 
-class Wechat
+class Wechat extends \think\Controller
 {
     protected $appId = "wxc164b903f978d83d";
     protected $appSecret = "b296cbe4bb23e7714b38ab6f23ac7b8e";
@@ -120,21 +120,36 @@ class Wechat
     public function sendTemplateMessage(Request $request)
     {
         try {
-            $openid = input('openid', '');
-            $templateId = input('template_id', '') ?: $this->tempid;
-            $data = input('data', []);
-            $url = input('url', '') ?: Config::get('wechat.official_account.url', '');
-            $miniprogram = input('miniprogram', Config::get('wechat.official_account.miniprogram', []));
+            // 从 POST Body 读取（JSON / form-data 均可）
+            $body = $request->post();
+            if (empty($body)) {
+                $body = $request->param(); // 兜底：部分情况下 ThinkPHP 会把 JSON 解析到 param
+            }
 
-            if (empty($openid)) {
+            $openid = trim((string)($body['openid'] ?? ''));
+            $templateId = trim((string)($body['template_id'] ?? '')) ?: $this->tempid;
+            $data = $body['data'] ?? [];
+            $url = trim((string)($body['url'] ?? '')) ?: Config::get('wechat.official_account.url', '');
+            $miniprogram = $body['miniprogram'] ?? Config::get('wechat.official_account.miniprogram', []);
+
+            if ($openid === '') {
                 return json(['code' => 400, 'message' => '缺少openid参数', 'data' => null]);
             }
-            if (empty($templateId)) {
+            if ($templateId === '') {
                 return json(['code' => 400, 'message' => '缺少template_id（模板ID）配置/参数', 'data' => null]);
+            }
+            if (is_string($data)) {
+                $decoded = json_decode($data, true);
+                $data = is_array($decoded) ? $decoded : [];
             }
             if (!is_array($data) || empty($data)) {
                 return json(['code' => 400, 'message' => '缺少data参数（模板数据）', 'data' => null]);
             }
+            if (is_string($miniprogram)) {
+                $decoded = json_decode($miniprogram, true);
+                $miniprogram = is_array($decoded) ? $decoded : [];
+            }
+
             if (empty($this->appId) || empty($this->appSecret)) {
                 return json(['code' => 500, 'message' => '公众号appid/secret未配置', 'data' => null]);
             }
@@ -150,7 +165,7 @@ class Wechat
                 'template_id' => $templateId,
                 'data' => $data,
             ];
-            if (!empty($url)) {
+            if ($url !== '') {
                 $payload['url'] = $url;
             }
             if (is_array($miniprogram) && !empty($miniprogram['appid']) && !empty($miniprogram['pagepath'])) {
@@ -170,7 +185,6 @@ class Wechat
                 return json(['code' => 500, 'message' => '模板消息响应解析失败', 'data' => ['raw' => $resp]]);
             }
 
-            // errcode=0 成功
             if (($respData['errcode'] ?? -1) !== 0) {
                 Log::error('发送模板消息失败: ' . json_encode($respData, JSON_UNESCAPED_UNICODE));
                 return json([
