@@ -10,5 +10,6 @@
 // +----------------------------------------------------------------------
 
 return [
-    'app\\command\\CronTemplateSubscribe',
+    // 'app\\command\\CronTemplateSubscribe',
+    'app\\command\\CronTemplateMsg',
 ];

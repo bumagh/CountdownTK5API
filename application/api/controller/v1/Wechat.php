@@ -16,7 +16,9 @@ class Wechat extends \think\Controller
 {
     protected $appId = "wxc164b903f978d83d";
     protected $appSecret = "b296cbe4bb23e7714b38ab6f23ac7b8e";
-    protected $tempid = "5XMZqesOgEVeZPyLdyn5nlr_LnjBBtnWIaGEKjZhSJI";
+    protected $subTemplateId = "5XMZqesOgEVeZPyLdyn5nlr_LnjBBtnWIaGEKjZhSJI";
+    protected $templateId = "ZC7WI71yB355fCSe_2LUGrrf_nF89gobhwp0-TkFkMU";
+
     /**
      * 微信公众号网页授权登录
      * @param Request $request
@@ -127,7 +129,7 @@ class Wechat extends \think\Controller
             }
 
             $openid = trim((string)($body['openid'] ?? ''));
-            $templateId = trim((string)($body['template_id'] ?? '')) ?: $this->tempid;
+            $templateId = trim((string)($body['template_id'] ?? '')) ?: $this->templateId;
             $data = $body['data'] ?? [];
             $url = trim((string)($body['url'] ?? '')) ?: Config::get('wechat.official_account.url', '');
             $miniprogram = $body['miniprogram'] ?? Config::get('wechat.official_account.miniprogram', []);

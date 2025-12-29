@@ -21,10 +21,10 @@ class CronTemplateSubscribe extends Command
 
     protected function execute(Input $input, Output $output)
     {
-        $service = new CronService();
-        $result = $service->run();
+        // $service = new CronService();
+        // $result = $service->run();
 
-        $output->writeln(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        // $output->writeln(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         // 0 表示成功
         return 0;
