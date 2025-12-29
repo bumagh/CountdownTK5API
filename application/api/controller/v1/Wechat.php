@@ -209,6 +209,125 @@ class Wechat extends \think\Controller
     }
 
     /**
+     * 发送一次性订阅消息（服务号）
+     * 对应微信接口：templateSubscribe
+     * POST https://api.weixin.qq.com/cgi-bin/message/template/subscribe?access_token=ACCESS_TOKEN
+     *
+     * 参数：
+     * - touser/openid: 接收用户openid（二选一，优先touser）
+     * - template_id: 订阅消息模板ID（必填）
+     * - scene: 订阅场景值（必填）
+     * - title: 消息标题（必填，<=15字）
+     * - data: 消息内容（必填，object；例如：{"content":{"value":"您好！","color":"#FF0000"}}）
+     * - url: 点击消息跳转链接（可选）
+     * - miniprogram: 跳小程序配置（可选：{"appid":"...","pagepath":"..."}）
+     */
+    public function templateSubscribe(Request $request)
+    {
+        try {
+            // 从 POST Body 读取（JSON / form-data 均可）
+            $body = $request->post();
+            if (empty($body)) {
+                $body = $request->param();
+            }
+
+            $touser = trim((string)($body['touser'] ?? ''));
+            if ($touser === '') {
+                $touser = trim((string)($body['openid'] ?? ''));
+            }
+            $templateId = trim((string)($body['template_id'] ?? ''));
+            $scene = (string)($body['scene'] ?? '');
+            $title = trim((string)($body['title'] ?? ''));
+            $data = $body['data'] ?? [];
+            $url = trim((string)($body['url'] ?? 'https://app.tutlab.tech/countdown/'));
+            $miniprogram = $body['miniprogram'] ?? [];
+
+            if ($touser === '') {
+                return json(['code' => 400, 'message' => '缺少touser/openid参数', 'data' => null]);
+            }
+            if ($templateId === '') {
+                return json(['code' => 400, 'message' => '缺少template_id参数', 'data' => null]);
+            }
+            if ($scene === '') {
+                return json(['code' => 400, 'message' => '缺少scene参数', 'data' => null]);
+            }
+            if ($title === '') {
+                return json(['code' => 400, 'message' => '缺少title参数', 'data' => null]);
+            }
+            if (is_string($data)) {
+                $decoded = json_decode($data, true);
+                $data = is_array($decoded) ? $decoded : [];
+            }
+            if (!is_array($data) || empty($data)) {
+                return json(['code' => 400, 'message' => '缺少data参数（消息内容）', 'data' => null]);
+            }
+            if (is_string($miniprogram)) {
+                $decoded = json_decode($miniprogram, true);
+                $miniprogram = is_array($decoded) ? $decoded : [];
+            }
+
+            if (empty($this->appId) || empty($this->appSecret)) {
+                return json(['code' => 500, 'message' => '公众号appid/secret未配置', 'data' => null]);
+            }
+
+            $accessToken = $this->getGlobalAccessToken($this->appId, $this->appSecret);
+            if (!$accessToken) {
+                return json(['code' => 500, 'message' => '获取access_token失败', 'data' => null]);
+            }
+
+            $api = 'https://api.weixin.qq.com/cgi-bin/message/template/subscribe?access_token=' . $accessToken;
+            $payload = [
+                'touser' => $touser,
+                'template_id' => $templateId,
+                'scene' => $scene,
+                'title' => $title,
+                'data' => $data,
+                'url' => $url
+            ];
+            if ($url !== '') {
+                $payload['url'] = $url;
+            }
+            if (is_array($miniprogram) && !empty($miniprogram['appid']) && !empty($miniprogram['pagepath'])) {
+                $payload['miniprogram'] = [
+                    'appid' => $miniprogram['appid'],
+                    'pagepath' => $miniprogram['pagepath'],
+                ];
+            }
+
+            $resp = $this->httpPostJson($api, $payload);
+            if ($resp === false) {
+                return json(['code' => 500, 'message' => '订阅消息请求失败', 'data' => null]);
+            }
+
+            $respData = json_decode($resp, true);
+            if (!is_array($respData)) {
+                return json(['code' => 500, 'message' => '订阅消息响应解析失败', 'data' => ['raw' => $resp]]);
+            }
+
+            if (($respData['errcode'] ?? -1) !== 0) {
+                Log::error('发送一次性订阅消息失败: ' . json_encode($respData, JSON_UNESCAPED_UNICODE));
+                return json([
+                    'code' => 500,
+                    'message' => '发送失败: ' . ($respData['errmsg'] ?? 'unknown'),
+                    'data' => $respData
+                ]);
+            }
+
+            return json([
+                'code' => 200,
+                'message' => '发送成功',
+                'data' => $respData
+            ]);
+        } catch (\Exception $e) {
+            return json([
+                'code' => 500,
+                'message' => '服务器错误: ' . $e->getMessage(),
+                'data' => null
+            ]);
+        }
+    }
+
+    /**
      * 使用code获取access_token和openid
      * @param string $code
      * @return array|false
@@ -489,7 +608,7 @@ class Wechat extends \think\Controller
             return $accessToken;
         }
 
-        // 从微信服务器获取
+        // 从微信服务器获取（stable_token 为 POST JSON）
         $url = "https://api.weixin.qq.com/cgi-bin/stable_token";
         $params = [
             'grant_type' => 'client_credential',
@@ -497,10 +616,7 @@ class Wechat extends \think\Controller
             'secret' => $appSecret
         ];
 
-        $fullUrl = $url . '?' . http_build_query($params);
         $result = $this->httpPostJson($url, $params);
-        var_dump($result);
-        exit;
         if ($result) {
             $data = json_decode($result, true);
             if (isset($data['access_token'])) {
@@ -517,6 +633,46 @@ class Wechat extends \think\Controller
         }
 
         return false;
+    }
+
+    public function getStableAccessToken()
+    {
+
+        // 从微信服务器获取（stable_token 为 POST JSON）
+        $url = "https://api.weixin.qq.com/cgi-bin/stable_token";
+        $params = [
+            'grant_type' => 'client_credential',
+            'appid' => $this->appId,
+            'secret' => $this->appSecret
+        ];
+
+        $result = $this->httpPostJson($url, $params);
+        if ($result) {
+            var_dump($result);
+            exit;
+            $data = json_decode($result, true);
+            if (isset($data['access_token'])) {
+                // 缓存access_token，提前200秒过期
+                $expireTime = ($data['expires_in'] ?? 7200) - 200;
+                if ($expireTime < 60) {
+                    $expireTime = 60;
+                }
+                return json([
+                    'code' => 200,
+                    'message' => '获取access_token成功',
+                    'data' => [
+                        'access_token' => $data['access_token'],
+                        'expires_in' => $expireTime
+                    ]
+                ]);
+            }
+        }
+
+        return json([
+            'code' => 500,
+            'message' => '获取access_token失败',
+            'data' => null
+        ]);
     }
 
     /**
