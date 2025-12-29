@@ -79,10 +79,10 @@ class User extends Cross
         $ret = $user->save($data);
         if ($ret) {
             $defaultCats = [
-                ['name' => 'work', 'icon' => '💼', 'color' => '#52c41a', 'user_id' => $info->id],
-                ['name' => 'family', 'icon' => '👨‍👩‍👧', 'color' => '#faad14', 'user_id' => $info->id],
-                ['name' => 'life', 'icon' => '🏠', 'color' => '#1890ff', 'user_id' => $info->id],
-                ['name' => 'longlife', 'icon' => '❤️', 'color' => '#f5222d', 'user_id' => $info->id],
+                ['name' => '工作', 'icon' => '💼', 'color' => '#52c41a', 'user_id' => $info->id],
+                ['name' => '家庭', 'icon' => '👨‍👩‍👧', 'color' => '#faad14', 'user_id' => $info->id],
+                ['name' => '生活', 'icon' => '🏠', 'color' => '#1890ff', 'user_id' => $info->id],
+                ['name' => '长寿', 'icon' => '❤️', 'color' => '#f5222d', 'user_id' => $info->id],
             ];
             Db::execute("SET NAMES utf8mb4");
             Db::execute("SET CHARACTER SET utf8mb4");
@@ -131,10 +131,10 @@ class User extends Cross
         $info = $user->where('id', $data['id'])->find();
         //自动生成四条默认分类
         $defaultCats = [
-            ['name' => 'work', 'icon' => '💼', 'color' => '#52c41a', 'user_id' => $info->id],
-            ['name' => 'family', 'icon' => '👨‍👩‍👧', 'color' => '#faad14', 'user_id' => $info->id],
-            ['name' => 'life', 'icon' => '🏠', 'color' => '#1890ff', 'user_id' => $info->id],
-            ['name' => 'longlife', 'icon' => '❤️', 'color' => '#f5222d', 'user_id' => $info->id],
+            ['name' => '工作', 'icon' => '💼', 'color' => '#52c41a', 'user_id' => $info->id],
+            ['name' => '家庭', 'icon' => '👨‍👩‍👧', 'color' => '#faad14', 'user_id' => $info->id],
+            ['name' => '生活', 'icon' => '🏠', 'color' => '#1890ff', 'user_id' => $info->id],
+            ['name' => '长寿', 'icon' => '❤️', 'color' => '#f5222d', 'user_id' => $info->id],
         ];
         foreach ($defaultCats as $catName) {
             $cats = new CategoryModel();
